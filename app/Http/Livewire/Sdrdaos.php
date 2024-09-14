@@ -29,6 +29,7 @@ class Sdrdaos extends Component
     public $cuenta_presupuestaria = '';
     public $folio_sdr = '';
     public $justificacion_del_requerimiento = '';
+    public $observacion_sdr='';
     public $certificado_de_presupuesto = '';
     public $cotizacion = '';
     public $materiales = [];
@@ -53,6 +54,7 @@ class Sdrdaos extends Component
     public $mfolio_sdr = '';
     public $mjustificacion_del_requerimiento = '';
     public $mcertificado_de_presupuesto = '';
+    public $mobservacion_sdr = '';
     public $mcotizacion = '';
     public $mmateriales = [];
     public $mselectedMaterial = null;
@@ -222,6 +224,7 @@ class Sdrdaos extends Component
             'products.*.unidad_medida' => 'required|string|max:255',
             'products.*.cantidad' => 'required|integer|min:1',
             'justificacion_del_requerimiento' => 'required|string|max:255',
+            'observacion_sdr' => 'required|string|max:255',
             'cotizaciones.*' => 'required',
             'certificados.*.archivoCertificado' => 'required',
             'certificados.*.fechaCertificado' => 'required',
@@ -251,6 +254,7 @@ class Sdrdaos extends Component
                     'folio_sdr' => $newFolio,
                     'id_materiales' => $this->selectedMaterial,
                     'justificacion_del_requerimiento' => $this->justificacion_del_requerimiento,
+                    'observacion_sdr' => $this->observacion_sdr,
                 ]);
 
 
@@ -322,6 +326,8 @@ class Sdrdaos extends Component
         $this->mfolio_sdr = $sdr_dao->folio_sdr;
         $this->mjustificacion_del_requerimiento = $sdr_dao->justificacion_del_requerimiento;
         $this->mselectedMaterial = $sdr_dao->id_materiales;
+        $this->mobservacion_sdr = $sdr_dao->observacion_sdr;
+
 
         // Manejar productos, cotizaciones, certificados si es necesario
         $this->mproducts = $sdr_dao->sdrproductos ? $sdr_dao->sdrproductos->map(function ($producto) {
@@ -376,6 +382,7 @@ class Sdrdaos extends Component
             'cuenta_presupuestaria' => $this->mcuenta_presupuestaria,
             'folio_sdr' => $this->mfolio_sdr,
             'justificacion_del_requerimiento' => $this->mjustificacion_del_requerimiento,
+            'observacion_sdr' => $this->mobservacion_sdr,
             'id_materiales' => $this->mselectedMaterial,
         ]);
 
@@ -432,26 +439,23 @@ class Sdrdaos extends Component
         $sdr_dao->solicitud()->whereIn('id', $existingSolicitudesIds)->delete();
 
 
-        // Actualizar o crear cotizaciones
         $existingCotizacionesIds = $sdr_dao->cotizacions->pluck('id')->toArray();
-        $cotizacionesToDelete = [];
 
         foreach ($this->mcotizaciones as $cotizacion) {
             if (isset($cotizacion['id'])) {
-                // Actualizar cotización existente
-                $existingCotizacionesIds = array_filter($existingCotizacionesIds, function ($id) use ($cotizacion) {
-                    return $id == $cotizacion['id'];
-                });
-
+                // Remover el ID de la lista de cotizaciones existentes para no eliminarla
+                $existingCotizacionesIds = array_diff($existingCotizacionesIds, [$cotizacion['id']]);
+        
                 if (isset($cotizacion['nuevo_archivo']) && $cotizacion['nuevo_archivo']) {
-                    // Eliminar archivo antiguo si es necesario
+                    // Eliminar el archivo anterior si existe
                     if (isset($cotizacion['archivo']) && $cotizacion['archivo']) {
                         Storage::delete($cotizacion['archivo']);
                     }
-                    // Guardar nuevo archivo
+                    // Guardar el nuevo archivo
                     $cotizacion['archivo'] = $cotizacion['nuevo_archivo']->store('cotizaciones', 'public');
                 }
-
+        
+                // Actualizar la cotización existente
                 $sdr_dao->cotizacions()->where('id', $cotizacion['id'])->update([
                     'archivo' => $cotizacion['archivo']
                 ]);
@@ -465,9 +469,20 @@ class Sdrdaos extends Component
                 ]);
             }
         }
-
-        // Eliminar cotizaciones que no están en la lista actual
+        
+        // Eliminar cotizaciones que ya no están en la lista actual
+        $cotizacionesAEliminar = $sdr_dao->cotizacions()->whereIn('id', $existingCotizacionesIds)->get();
+        
+        // Eliminar los archivos de las cotizaciones antes de eliminarlas
+        foreach ($cotizacionesAEliminar as $cotizacion) {
+            if (isset($cotizacion->archivo) && $cotizacion->archivo) {
+                Storage::delete($cotizacion->archivo);
+            }
+        }
+        
+        // Luego de eliminar los archivos, eliminar las cotizaciones de la base de datos
         $sdr_dao->cotizacions()->whereIn('id', $existingCotizacionesIds)->delete();
+        
 
 
         // Actualizar o crear certificados

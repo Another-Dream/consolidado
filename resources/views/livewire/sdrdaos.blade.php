@@ -117,7 +117,7 @@
                         <span class="text-danger">Falta el campo fecha</span>
                         @enderror
                     </div><br>
-                 
+
                     <div class="form-group">
                         <label>Cuenta Presupuestaria</label>
                         <input type="text" wire:model.defer="cuenta_presupuestaria" class="form-control">
@@ -125,7 +125,7 @@
                         <span class="text-danger">Falta el campo Cuenta Presupuestaria</span>
                         @enderror
                     </div><br>
-                 
+
                     <div class="form-group">
                         <label>Materiales - Herramientas - Vehiculos</label>
                         <select wire:model.defer="selectedMaterial" id="materiales" class="form-control">
@@ -138,7 +138,16 @@
                         <span class="text-danger">Falta el campo Material</span>
                         @enderror
 
-                    </div><br><br>
+                    </div>
+                    <br><br>
+                    <div class="form-group">
+                        <label>Observacion Sdr</label>
+                        <input wire:model.defer="observacion_sdr" class="form-control">
+                        @error('observacion_sdr')
+                        <span class="text-danger">Falta el campo Observacion</span>
+                        @enderror
+                    </div>
+                    <br><br>
                     <div class="form-group">
                         <label>Justificacion Del Requerimiento</label>
                         <input wire:model.defer="justificacion_del_requerimiento" class="form-control">
@@ -218,12 +227,11 @@
                     @foreach($cotizaciones as $index => $cotizacion)
                     <br><br>
                     <div class="form-group">
-                      <label>Archivo Cotizacion</label>
-                      <input type="file" class="form-control"
-                      wire:model.defer="cotizaciones.{{ $index }}.archivo">
+                        <label>Archivo Cotizacion</label>
+                        <input type="file" class="form-control" wire:model.defer="cotizaciones.{{ $index }}.archivo">
                     </div><br>
-                    <button type="button" class="btn btn-danger"
-                      wire:click="removeCotizacion({{ $index }})">Eliminar Cotizacion</button>
+                    <button type="button" class="btn btn-danger" wire:click="removeCotizacion({{ $index }})">Eliminar
+                        Cotizacion</button>
                     @endforeach
                     <button type="button" wire:click="addCotizacion" class="btn btn-success">Agregar
                         Cotizacion</button><br><br>
@@ -413,8 +421,16 @@
 
 
                             </div><br><br>
-
+                            <div class="form-group">
+                                <label>Observacion Sdr</label>
+                                <input wire:model.defer="mobservacion_sdr" class="form-control">
+                            </div>
                             <br><br>
+                            <div class="form-group">
+                                <label>Justificacion Del Requerimiento</label>
+                                <input wire:model.defer="mjustificacion_del_requerimiento" class="form-control">
+                            </div><br><br>
+                            <br>
                             <hr>
 
                             <h3>Solicitudes de Pedido</h3>
@@ -465,12 +481,11 @@
                                 wire:click="mremoveProduct({{ $index }})">Eliminar Producto</button>
                             @endforeach
                             <button type="button" wire:click="maddProduct" class="btn btn-success">Agregar
-                                Producto</button><br><br>
-                            <br>
-                            <div class="form-group">
-                                <label>Justificacion Del Requerimiento</label>
-                                <input wire:model.defer="mjustificacion_del_requerimiento" class="form-control">
-                            </div><br><br>
+                                Producto</button>
+
+                            <br><br><br>
+                            <hr>
+                            <h3>Cotizaciones</h3>
 
                             @foreach($mcotizaciones as $index => $mcotizacion)
                             <br><br>
@@ -491,11 +506,14 @@
 
                             <br>
 
-                            <br><br>
-
+                            <br>
+                                
+                            <hr>
+                            <h3>Certificados</h3>
                             @foreach($mcertificados as $index => $mcertificado)
-
+                           
                             <div class="form-group">
+                                <br><br>
                                 <label>Número Certificado</label>
                                 <input type="text" wire:model="mcertificados.{{ $index }}.numeroCertificado"
                                     class="form-control">

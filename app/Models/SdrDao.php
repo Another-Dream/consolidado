@@ -12,7 +12,7 @@ class SdrDao extends Model
     protected $fillable = ['id',
         'fecha', 'solicitado_por','unidad', 'fecha_unidad',
         'cuenta_presupuestaria', 'folio_sdr', 'id_materiales', 
-        'justificacion_del_requerimiento'
+        'justificacion_del_requerimiento','observacion_sdr'
     ];
 
     public function sdrproductos()

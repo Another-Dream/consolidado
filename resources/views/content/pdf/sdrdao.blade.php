@@ -229,7 +229,7 @@
         @endforeach
      
     </table>
-    <p>Se adjunta término de requerimiento N°37</p>
+    <p>{{ $data->observacion_sdr }}</p>
 
     <table class="justify">
         <tr>
